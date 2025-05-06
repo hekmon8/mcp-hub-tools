@@ -2,6 +2,10 @@
 
 Mcp tools powered by aimcp, find mcps whatever you want. This server allows searching the MCP Hub for available MCPs.
 
+<a href="https://glama.ai/mcp/servers/@hekmon8/mcp-hub-tools">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/@hekmon8/mcp-hub-tools/badge" alt="Hub Tools MCP server" />
+</a>
+
 ## Open Protocol
 
 This server implements the [Model Context Protocol (MCP)](https://github.com/modelcontextprotocol/specification). It acts as an MCP server that can be connected to by MCP clients (like compatible AI assistants or development tools).
