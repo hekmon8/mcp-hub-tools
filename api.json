@@ -1,0 +1,96 @@
+{
+  "name": "MCP Hub",
+  "description": "Model Context Protocol Hub API for discovering and searching MCPs",
+  "version": "1.0.0",
+  "endpoints": [
+    {
+      "name": "search",
+      "description": "Search for available MCPs",
+      "method": "GET",
+      "path": "/api/open/v1/search",
+      "parameters": [
+        {
+          "name": "keywords",
+          "description": "Search keywords",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "description": "API key authentication. Requires a valid API key created from the user's account."
+      },
+      "rate_limit": {
+        "requests": 20,
+        "period": "hour",
+        "description": "API requests are limited to 20 requests per hour per user."
+      },
+      "responses": {
+        "200": {
+          "description": "Successful response with MCP search results",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": { "type": "string" },
+                        "brief": { "type": "string" },
+                        "website_url": { "type": "string" }
+                      }
+                    }
+                  },
+                  "count": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Bad request - missing required parameters",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "error": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "401": {
+          "description": "Unauthorized - invalid or missing API key, or rate limit exceeded",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "error": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Server error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "error": { "type": "string" },
+                  "message": { "type": "string" }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+} 

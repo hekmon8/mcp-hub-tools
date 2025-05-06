@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "name": "MCP Hub",
+  "description": "Official MCP Hub for discovering and searching Model Context Protocols",
+  "version": "1.0.0",
+  "author": "MCP Hub Team",
+  "website_url": "https://www.aimcp.info",
+  "logo_url": "https://www.aimcp.info/logo.png",
+  "categories": ["search", "discovery", "mcp"],
+  "interfaces": ["api"],
+  "authentication": {
+    "type": "api_key",
+    "instructions": "API keys can be created in your MCP Hub account profile at https://www.aimcp.info/api-keys"
+  },
+  "api": {
+    "base_url": "https://www.aimcp.info",
+    "documentation_url": "https://www.aimcp.info/docs/api",
+    "specification_path": "/mcp/api.json"
+  },
+  "features": {
+    "search": {
+      "description": "Search for MCPs by name or description, returning basic information and website URL",
+      "endpoint": "/api/open/v1/search"
+    }
+  }
+} 
