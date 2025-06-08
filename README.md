@@ -1,22 +1,28 @@
-# mcphub_tools MCP Server
+# MCP Hub Tools - HTTP MCP Server Documentation
 
-Mcp tools powered by aimcp, find mcps whatever you want. This server allows searching the MCP Hub for available MCPs.
+This is the documentation and configuration repository for MCP Hub's HTTP-based MCP (Model Context Protocol) server. The server allows searching and discovering MCPs through a standardized HTTP interface.
 
-## Open Protocol
+## Overview
 
-This server implements the [Model Context Protocol (MCP)](https://github.com/modelcontextprotocol/specification). It acts as an MCP server that can be connected to by MCP clients (like compatible AI assistants or development tools).
+MCP Hub implements [Model Context Protocol (MCP)](https://github.com/modelcontextprotocol/specification) HTTP endpoints within a Next.js application, providing a modern and accessible way for AI assistants and development tools to discover and interact with MCPs from [MCP Hub](https://www.aimcp.info).
+
+## Protocol Support
+
+**⚠️ Important Change**: This server **only supports HTTP-based MCP connections**. The traditional stdio-based implementation has been deprecated in favor of the more accessible and reliable HTTP interface.
 
 ## Introduction
 
-`mcphub_tools` is an MCP server designed to interact with the [MCP Hub](https://www.aimcp.info). Its primary function is to provide a tool that allows users to search for MCPs (Model Context Protocols/Servers) registered on the hub based on keywords.
+`mcp-hub-tools` provides documentation and configuration for interacting with [MCP Hub](https://www.aimcp.info). The server offers standardized JSON-RPC 2.0 endpoints for searching MCPs and retrieving detailed information about registered Model Context Protocols.
 
-## Tools
+**Server Implementation Location**: The HTTP MCP server is actually implemented in MCP Hub's Next.js application at `/nextjs/app/api/open/mcp/route.ts`.
 
-This server provides the following tool:
+## Available Tools
 
-### `search_mcp_hub`
+The HTTP MCP server provides the following tools via JSON-RPC 2.0:
 
-*   **Description:** Searches for MCPs on the MCP Hub.
+### `search_mcp`
+
+*   **Description:** Search for MCPs in the MCP Hub database using keywords. Returns a list of matching MCPs with basic information.
 *   **Input Schema:**
     ```json
     {
@@ -24,151 +30,161 @@ This server provides the following tool:
       "properties": {
         "keywords": {
           "type": "string",
-          "description": "Keywords to search for MCPs"
+          "description": "Keywords to search for in MCP names, descriptions, and metadata"
+        },
+        "limit": {
+          "type": "number",
+          "description": "Maximum number of results to return (default: 50)",
+          "default": 50
         }
       },
       "required": ["keywords"]
     }
     ```
-*   **Output:** Returns a JSON string containing the search results from the MCP Hub API.
+*   **Output:** Returns search results with basic MCP information including:
+    - `uuid`: Unique identifier for the MCP
+    - `name`: MCP name
+    - `brief`: Short description
+    - `clicks`: Usage statistics
+    - `count`: Total number of results found
+    - `keywords`: Search terms used
 
-### `get_mcp_info`
+### `get_mcp_detail`
 
-*   **Description:** Gets detailed information about a specific MCP.
+*   **Description:** Get detailed information about a specific MCP using its UUID.
 *   **Input Schema:**
     ```json
     {
       "type": "object",
       "properties": {
-        "id": {
+        "mcp_id": {
           "type": "string",
-          "description": "MCP identifier (UUID)"
+          "description": "The UUID of the MCP to retrieve details for"
         }
       },
-      "required": ["id"]
+      "required": ["mcp_id"]
     }
     ```
-*   **Output:** Returns a JSON string containing the detailed information about the specified MCP.
+*   **Output:** Returns comprehensive MCP information including:
+    - `id`: Internal database ID
+    - `uuid`: Unique identifier
+    - `name`: MCP name
+    - `brief`: Description
+    - `website_url`: Official website
+    - `author_name`: Creator information
+    - `created_at` / `updated_at`: Timestamps
+    - `is_recommended` / `is_official`: Status flags
+    - `clicks`: Usage statistics
+    - `tags`: Associated categories
+    - `metadata`: Additional information
+    - `mcp_avatar_url` / `user_avatar_url`: Profile images
 
-## Implementation Options
+### Example Tool Responses
 
-MCP Hub supports two different ways to implement MCP servers:
+#### `search_mcp` Response Example
 
-### 1. Standard stdio-based MCP Server
-
-This is the traditional implementation where the MCP server communicates with clients through standard input/output (stdio). This approach is ideal for standalone command-line tools that can be integrated with MCP clients like Claude Desktop.
-
-The easiest way to use the stdio-based implementation is through our published package:
-
-```bash
-# Using npx (recommended for most users)
-npx @aimcp/tools
-
-# Using uvx (faster startup)
-uvx @aimcp/tools
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "uuid": "550e8400-e29b-41d4-a716-446655440000",
+      "name": "Blockchain MCP",
+      "brief": "A Model Context Protocol for blockchain data analysis",
+      "clicks": 142
+    }
+  ],
+  "count": 1,
+  "total_results": 1,
+  "keywords": "blockchain"
+}
 ```
 
-### 2. HTTP-based MCP Server
+#### `get_mcp_detail` Response Example
 
-MCP Hub also provides an HTTP-based implementation that allows AI assistants and other tools to connect to the MCP server over HTTP. This is implemented in the MCP Hub's API at `/api/open/v1/streamable`.
+```json
+{
+  "success": true,
+  "data": {
+    "id": 123,
+    "uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "name": "Blockchain MCP",
+    "brief": "A comprehensive Model Context Protocol for blockchain data analysis",
+    "website_url": "https://github.com/example/blockchain-mcp",
+    "author_name": "Example Developer",
+    "created_at": "2024-01-15T10:30:00Z",
+    "updated_at": "2024-03-20T14:45:00Z",
+    "is_recommended": true,
+    "is_official": false,
+    "clicks": 142,
+    "tags": ["blockchain", "crypto", "data-analysis"],
+    "metadata": {
+      "version": "1.2.0",
+      "license": "MIT"
+    },
+    "mcp_avatar_url": "https://example.com/avatar.png",
+    "user_avatar_url": "https://example.com/user.png"
+  }
+}
+```
 
-The HTTP endpoint is available at:
-```
-https://mcp.aimcp.info/api/open/v1/streamable
-```
+## HTTP-based MCP Server
+
+MCP Hub provides a modern HTTP-based MCP server implementation within its Next.js application that offers superior reliability and accessibility compared to traditional stdio-based approaches. The server implements the Model Context Protocol using JSON-RPC 2.0 over HTTP.
+
+### Server Endpoint
+
+**Production URL**: https://www.aimcp.info/api/open/mcp
+
+### Supported Transports
+
+- **HTTP POST**: Standard JSON-RPC 2.0 requests
+- **Server-Sent Events (SSE)**: Real-time streaming connection for better client integration
+
+### Key Features
+
+- ✅ **JSON-RPC 2.0 Compliance**: Full compatibility with MCP protocol specification
+- ✅ **Dual Transport Support**: HTTP POST and SSE for different client needs  
+- ✅ **API Key Authentication**: Secure access control
+- ✅ **Rate Limiting**: Built-in protection against abuse
+- ✅ **CORS Support**: Cross-origin requests enabled
+- ✅ **Error Handling**: Comprehensive error responses
 
 ## Usage
 
 ### Prerequisites
 
-*   Node.js and npm (or pnpm/yarn) installed for the stdio-based implementation.
-*   An API key from MCP Hub ([https://www.aimcp.info](https://www.aimcp.info)).
+*   An API key from MCP Hub ([https://www.aimcp.info](https://www.aimcp.info))
 
 #### How to get an API key
 
-*   Go to [https://www.aimcp.info](https://www.aimcp.info).
-*   Sign up or log in.
-*   Navigate to your profile or account settings.
-*   Look for an option to generate or retrieve your API key.
-*   Or you can access [here](https://www.aimcp.info/en/api-keys) to generate an API key.
-NOTE: The API key has rate limits for 20 requests per hour.
+1. Visit [https://www.aimcp.info](https://www.aimcp.info)
+2. Sign up or log in to your account
+3. Navigate to [API Keys page](https://www.aimcp.info/en/api-keys)
+4. Generate a new API key for your application
+
+**Note**: API keys have a rate limit of 20 requests per hour.
 
 ### Authentication
 
-The MCP API requires authentication with a valid API key. This key must be provided via:
+All requests to the HTTP MCP server require authentication using a Bearer token in the `Authorization` header:
 
-1. For stdio-based implementation: The environment variable `MCP_HUB_API_KEY`.
-2. For HTTP-based implementation: The `Authorization` header as a Bearer token.
-
-```
+```http
 Authorization: Bearer YOUR_API_KEY
 ```
 
-### Integration with AI Assistants and MCP Clients
+### MCP Client Configuration
 
-#### Claude Desktop Configuration
+#### HTTP-based Configuration (Recommended)
 
-To use MCP Hub with Claude Desktop:
-
-1. Locate your Claude Desktop configuration file:
-   - Windows: `%APPDATA%\claude\config.json`
-   - macOS: `~/Library/Application Support/claude/config.json` or `~/.config/claude/config.json`
-   - Linux: `~/.config/claude/config.json`
-
-2. Add the following configuration:
+Modern MCP clients can connect directly to the HTTP server:
 
 ```json
 {
   "mcpServers": {
     "mcp-hub": {
-      "command": "npx",
-      "args": ["@aimcp/tools"],
-      "environment": {
-        "MCP_HUB_API_KEY": "YOUR_API_KEY"
-      }
-    }
-  }
-}
-```
-
-3. Restart Claude Desktop to apply the changes.
-4. In your conversation, you can access MCP Hub tools by typing "@mcp-hub".
-
-#### Cline and Other CLI Tools
-
-For command-line based tools like Cline:
-
-1. Create a configuration file named `servers.json` in your project directory:
-
-```json
-{
-  "servers": [
-    {
-      "name": "mcp-hub-tools",
-      "command": ["npx", "@aimcp/tools"],
-      "environment": {
-        "MCP_HUB_API_KEY": "YOUR_API_KEY"
-      }
-    }
-  ]
-}
-```
-
-2. Launch the tool with reference to this configuration:
-
-```bash
-cline --mcp-servers-config ./servers.json
-```
-
-#### For Tools Supporting Remote MCP Servers
-
-Some newer MCP clients support direct HTTP connections. Configure them using:
-
-```json
-{
-  "mcpServers": {
-    "mcp-hub-http": {
-      "url": "https://mcp.aimcp.info/api/open/v1/streamable",
+      "url": "https://www.aimcp.info/api/open/mcp",
+      "transport": "sse",
       "headers": {
         "Authorization": "Bearer YOUR_API_KEY"
       }
@@ -177,219 +193,164 @@ Some newer MCP clients support direct HTTP connections. Configure them using:
 }
 ```
 
-#### For Tools Using File-based Configuration (Cursor, etc.)
+#### Simplified Configuration
 
-1. Create a configuration file:
+For clients supporting simplified configuration:
 
 ```json
 {
   "mcpServers": {
     "mcp-hub": {
-      "command": "npx",
-      "args": ["@aimcp/tools"],
-      "environment": {
-        "MCP_HUB_API_KEY": "YOUR_API_KEY"
+      "url": "https://www.aimcp.info/api/open/mcp",
+      "apiKey": "YOUR_API_KEY"
+    }
+  }
+}
+```
+
+#### Cursor IDE Configuration
+
+For Cursor IDE, add to your MCP configuration:
+
+```json
+{
+  "mcpServers": {
+    "mcp-hub": {
+      "url": "https://www.aimcp.info/api/open/mcp",
+      "transport": "sse",
+      "headers": {
+        "Authorization": "Bearer YOUR_API_KEY"
       }
     }
   }
 }
 ```
 
-2. Reference this file in your tool's settings or launch with the appropriate configuration parameter.
+### Testing the Connection
 
-### Running Manually
-
-You can also run the stdio-based server manually for testing (ensure `MCP_HUB_API_KEY` is set in your environment):
+You can test the HTTP MCP server using curl:
 
 ```bash
-export MCP_HUB_API_KEY="YOUR_API_KEY_HERE"
-npx @aimcp/tools
+# Initialize connection
+curl -X POST https://www.aimcp.info/api/open/mcp \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{"jsonrpc": "2.0", "id": 1, "method": "initialize"}'
+
+# List available tools
+curl -X POST https://www.aimcp.info/api/open/mcp \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{"jsonrpc": "2.0", "id": 2, "method": "tools/list"}'
+
+# Search for MCPs
+curl -X POST https://www.aimcp.info/api/open/mcp \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{"jsonrpc": "2.0", "id": 3, "method": "tools/call", "params": {"name": "search_mcp", "arguments": {"keywords": "blockchain", "limit": 5}}}'
 ```
 
-## API Interface
+## MCP Protocol Implementation
 
-This server interacts with the following MCP Hub API endpoint:
+### Supported Methods
 
-*   **Endpoint:** `GET https://www.aimcp.info/api/open/v1/search`
-*   **Authentication:** Requires a Bearer token in the `Authorization` header, using the `MCP_HUB_API_KEY`.
-*   **Query Parameter:** `keywords` (string)
+The HTTP MCP server implements the following JSON-RPC 2.0 methods:
 
-## Using the HTTP-based MCP API
+- **`initialize`**: Establish connection and get server capabilities
+- **`tools/list`**: Retrieve available tools
+- **`tools/call`**: Execute specific tools with arguments
 
-MCP Hub provides an HTTP-based MCP server at `/api/open/v1/streamable` that implements the Model Context Protocol. This allows AI assistants and tools to search for MCPs and retrieve MCP information directly.
+### Response Format
 
-### Connection Steps
-
-1. First, establish a connection to get a session ID:
-
-```bash
-GET /api/open/v1/streamable
-Authorization: Bearer YOUR_API_KEY
-```
-
-Response:
+All responses follow the JSON-RPC 2.0 specification:
 
 ```json
 {
-  "success": true,
-  "sessionId": "194830ab-eb0b-4d17-a574-af96705276c2",
-  "message": "Connection established. Use this sessionId for subsequent calls."
+  "jsonrpc": "2.0",
+  "id": "request_id",
+  "result": {
+    // Response data
+  }
 }
 ```
 
-2. Call a tool with the session ID:
+### Error Handling
 
-```bash
-POST /api/open/v1/streamable?sessionId=194830ab-eb0b-4d17-a574-af96705276c2
-Content-Type: application/json
-Authorization: Bearer YOUR_API_KEY
+Errors are returned in standard JSON-RPC 2.0 format:
 
+```json
 {
   "jsonrpc": "2.0",
-  "method": "callTool",
-  "params": {
-    "name": "search_mcp_hub",
-    "arguments": {
-      "keywords": "example"
-    }
-  },
-  "id": "call-1"
+  "id": "request_id", 
+  "error": {
+    "code": -32603,
+    "message": "Error description"
+  }
 }
 ```
 
-## Development & Deployment
+## Server Information
 
-### Development
+### Protocol Specification
 
-1.  **Install Dependencies:** `pnpm install`
-2.  **Build:** `pnpm run build` (compiles TypeScript to JavaScript in `build/`)
-3.  **Watch Mode:** `pnpm run watch` (automatically recompiles on changes)
-4.  **Testing with Inspector:** `pnpm run inspector` (runs the server with the MCP Inspector tool)
+- **Protocol Version**: `2024-11-05`
+- **Server Name**: `mcp-hub-search`
+- **Version**: `1.0.0`
+- **Capabilities**: Tools enabled with change notifications
 
-### Creating Your Own stdio-based MCP Server
+### Rate Limits
 
-If you want to create your own stdio-based MCP server, follow these steps:
+- **API Requests**: 20 requests per hour per API key
 
-1. **Set up your project:**
-   ```bash
-   mkdir my-mcp-server
-   cd my-mcp-server
-   npm init -y
-   npm install @modelcontextprotocol/sdk
-   ```
+### CORS Support
 
-2. **Create your server implementation:**
+The server supports cross-origin requests with the following headers:
+- `Access-Control-Allow-Origin: *`
+- `Access-Control-Allow-Methods: GET, POST, OPTIONS`
+- `Access-Control-Allow-Headers: Content-Type, Authorization, x-api-key`
 
-```typescript
-// index.ts
-import { Server } from '@modelcontextprotocol/sdk/server';
-import { 
-  CallToolRequestSchema, 
-  ListToolsRequestSchema,
-  McpError,
-  ErrorCode
-} from '@modelcontextprotocol/sdk/types';
-import { StdioTransport } from '@modelcontextprotocol/sdk/transports/stdio';
+## Troubleshooting
 
-// Create an MCP server instance
-const server = new Server(
-  {
-    name: "my-mcp-server",
-    version: "1.0.0"
-  },
-  {
-    capabilities: {
-      tools: {},
-    }
-  }
-);
+### Common Issues
 
-// Set up tool handlers
-server.setRequestHandler(ListToolsRequestSchema, async () => ({
-  tools: [
-    {
-      name: 'my_tool',
-      description: 'Description of my tool',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          param1: {
-            type: 'string',
-            description: 'Description of param1',
-          },
-        },
-        required: ['param1'],
-      },
-    },
-  ],
-}));
+1. **"0 tools enabled"**: Ensure your MCP client properly handles the `initialize` response and `capabilities.tools.listChanged` flag.
 
-server.setRequestHandler(CallToolRequestSchema, async (request) => {
-  // Extract tool name and arguments
-  const toolName = request.params.name;
-  const args = request.params.arguments;
-  
-  if (toolName === 'my_tool') {
-    // Validate arguments
-    if (typeof args !== 'object' || args === null || typeof args.param1 !== 'string') {
-      throw new McpError(
-        ErrorCode.InvalidParams,
-        'Invalid arguments. Requires "param1" (string).'
-      );
-    }
-    
-    try {
-      // Implement your tool logic here
-      const result = `Processed: ${args.param1}`;
-      
-      return {
-        content: [
-          {
-            type: 'text',
-            text: result,
-          },
-        ],
-      };
-    } catch (error) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: `Error: ${error instanceof Error ? error.message : String(error)}`,
-          },
-        ],
-        isError: true,
-      };
-    }
-  } else {
-    throw new McpError(
-      ErrorCode.MethodNotFound,
-      `Unknown tool: ${toolName}`
-    );
-  }
-});
+2. **Authentication errors**: Verify your API key is valid and included in the `Authorization` header.
 
-// Connect the server to stdin/stdout
-const transport = new StdioTransport();
-server.connect(transport).catch(console.error);
-```
+3. **Connection timeouts**: Verify that the MCP Hub server at https://www.aimcp.info is accessible.
 
-3. **Compile and run your server:**
-   ```bash
-   npx tsc
-   node dist/index.js
-   ```
+4. **CORS errors**: Ensure your client includes proper headers and handles preflight OPTIONS requests.
 
-4. **Test your server with the MCP Inspector tool:**
-   ```bash
-   npx @modelcontextprotocol/inspector
-   ```
+### Debug Mode
 
-### Deployment
+For debugging, you can inspect the raw HTTP requests and responses using browser developer tools or command-line tools like curl.
 
-1.  Ensure the server is built (`pnpm run build`).
-2.  The `build` directory contains the necessary JavaScript files.
-3.  The server can be run using `node build/index.js` or the command `mcphub_tools` if the package is installed appropriately (e.g., globally or linked).
-4.  Configure your MCP client/manager to point to the server executable and provide the `MCP_HUB_API_KEY` environment variable.
+## Migration from stdio-based Implementation
 
-You can also publish your MCP server to npm so others can install and use it.
+**Important**: The stdio-based implementation has been deprecated. To migrate:
+
+1. Update your MCP client configuration to use HTTP endpoints
+2. Replace command-based configurations with URL-based ones
+3. Update authentication from environment variables to HTTP headers
+4. Test the new connection using the provided curl examples
+
+## Server Architecture
+
+The HTTP MCP server is integrated into MCP Hub's Next.js application:
+
+- **Source Code Location**: `/nextjs/app/api/open/mcp/route.ts`
+- **Production Service**: https://www.aimcp.info/api/open/mcp
+
+## Contributing
+
+This HTTP MCP server is part of the MCP Hub project. For issues or contributions, please visit the main repository.
+
+## License
+
+MIT License
+
+## Related Links
+
+- [MCP Hub Website](https://www.aimcp.info)
+- [Model Context Protocol Specification](https://github.com/modelcontextprotocol/specification)
+- [API Documentation](https://www.aimcp.info/docs/api)

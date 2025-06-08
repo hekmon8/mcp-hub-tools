@@ -1,26 +1,41 @@
 {
   "schema_version": "1.0",
-  "name": "MCP Hub",
-  "description": "Official MCP Hub for discovering and searching Model Context Protocols",
+  "name": "MCP Hub Tools",
+  "description": "HTTP-based Model Context Protocol server for discovering and searching MCPs",
   "version": "1.0.0",
   "author": "MCP Hub Team",
   "website_url": "https://www.aimcp.info",
-  "logo_url": "https://www.aimcp.info/logo.png",
-  "categories": ["search", "discovery", "mcp"],
-  "interfaces": ["api"],
+  "categories": ["search", "discovery", "mcp", "protocol"],
+  "interfaces": ["mcp-http"],
+  "protocol": {
+    "name": "Model Context Protocol",
+    "version": "2024-11-05",
+    "transport": ["http", "sse"]
+  },
   "authentication": {
     "type": "api_key",
     "instructions": "API keys can be created in your MCP Hub account profile at https://www.aimcp.info/api-keys"
   },
-  "api": {
+  "server": {
     "base_url": "https://www.aimcp.info",
-    "documentation_url": "https://www.aimcp.info/docs/api",
-    "specification_path": "/mcp/api.json"
+    "endpoint": "/api/open/mcp",
+    "documentation_url": "https://www.aimcp.info/en/api-docs"
   },
-  "features": {
-    "search": {
-      "description": "Search for MCPs by name or description, returning basic information and website URL",
-      "endpoint": "/api/open/v1/search"
+  "tools": [
+    {
+      "name": "search_mcp",
+      "description": "Search for MCPs in the MCP Hub database using keywords",
+      "input_schema": {
+        "keywords": "string (required)",
+        "limit": "number (optional, default: 50)"
+      }
+    },
+    {
+      "name": "get_mcp_detail", 
+      "description": "Get detailed information about a specific MCP using its UUID",
+      "input_schema": {
+        "mcp_id": "string (required)"
+      }
     }
-  }
+  ]
 } 

@@ -1,27 +1,32 @@
 {
-  "name": "aimcp_tools",
-  "version": "0.1.0",
-  "description": "Mcp tools power by aimcp, find mcps whatever you want.",
-  "private": true,
-  "type": "module",
-  "bin": {
-    "aimcp_tools": "./build/index.js"
+  "name": "mcp-hub-tools",
+  "version": "1.0.0",
+  "description": "Documentation and configuration for MCP Hub HTTP-based MCP server - search and discover Model Context Protocols.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mcp-hub/mcp-hub.git",
+    "directory": "mcp-hub-tools"
   },
   "files": [
-    "build"
+    "manifest.json",
+    "README.md",
+    "LICENSE"
   ],
-  "scripts": {
-    "build": "tsc && node -e \"require('fs').chmodSync('build/index.js', '755')\"",
-    "prepare": "npm run build",
-    "watch": "tsc --watch",
-    "inspector": "npx @modelcontextprotocol/inspector build/index.js"
+  "keywords": [
+    "mcp", 
+    "model-context-protocol", 
+    "http", 
+    "json-rpc",
+    "server-sent-events",
+    "search", 
+    "documentation"
+  ],
+  "license": "MIT",
+  "homepage": "https://www.aimcp.info",
+  "bugs": {
+    "url": "https://github.com/mcp-hub/mcp-hub/issues"
   },
-  "dependencies": {
-    "@modelcontextprotocol/sdk": "0.6.0",
-    "axios": "^1.9.0"
-  },
-  "devDependencies": {
-    "@types/node": "^20.11.24",
-    "typescript": "^5.3.3"
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
